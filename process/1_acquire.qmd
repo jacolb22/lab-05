@@ -1,0 +1,63 @@
+---
+title: "Lab 05: Harvesting research data"
+author: "Logan Jacobs"
+date: 2024-02-28
+date-modified: today
+format:
+  html:
+    toc: true
+    toc_depth: 2
+bibliography: [../bibliography.bib, ../packages.bib]
+---
+
+# Data description
+
+The data I am downloading is the Switchboard Dialog Act Corpus. This Corpus is a set of conversations 
+
+The data is in an archived file on the [LDC](https://catalog.ldc.upenn.edu/LDC97S62).
+
+In this case, I am going to download, unarchive and save the contents of the corpus to the `data/original/swda` directory.
+
+The format of the file, according to the README file is a list of annotated phone conversations, organized by 42 tags. The files themselves are .utt files, and are contained in a group of folders, which altogether constitutes the original unarchived .tar.gz file
+
+The license of the file is denoted as "LDC User Agreement for Non-Members". Upon reading this file, the license generally describes that the database can be used for non-commercial linguistic education, research, and technology development, allowing me to use it for my purposes.
+
+# Data collection
+
+Below describes my data collection process for the data described above.
+
+Before anything else, I will install the necessary packages. Here I am installing `dplyr`@dplyr for piping more efficiently and `fs`@fs for the file system.
+
+```{r}
+#| label: setup-packages
+#| message: false
+
+# Load packages
+library(dplyr) #for piping
+library(fs) #file system
+
+```
+
+The first step in the process is to try out using `download.file()` to acquire the archived file.
+
+```{r}
+#| label: download-archive-test
+
+# set url to file address
+
+url <- "https://catalog.ldc.upenn.edu/docs/LDC97S62/swb1_dialogact_annot.tar.gz"
+data_dest <- "../data/original/swda.tar.gz"
+
+download.file(url,data_dest)
+
+```
+
+Now the file is at `../data/original/swda.tar.gz`. Since it is a gzipped tarball file, I will have to unarchive it using `untar()` from base R.
+
+```{r}
+#| label: unarchive-test
+
+untar(data_dest, exdir="../data/original/swda")
+```
+
+Upon completion of this process, the data will be in the appropriate directory: `../data/original/swda`.
