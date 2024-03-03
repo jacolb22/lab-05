@@ -62,7 +62,24 @@ if (!dir.exists(data_dest)){
 
 ```
 
-
 Upon completion of this process, the data will be in the appropriate directory: `../data/original/swda`.
+
+To describe this data, it will be useful for it to be in a tibble format. The following code transforms the data into this tibble format.
+
+<!-- How can I do this?
+
+go through every file
+get lines below header
+add them to a string vector, perhaps add another two vectors for file number and line number
+make that a tibble
+
+when I tried this, it took 5 minutes before it finally went through each file.
+
+-->
+
+
+
+
+
 
 
