@@ -7,7 +7,7 @@ format:
   html:
     toc: true
     toc_depth: 2
-bibliography: [../bibliography.bib, ../packages.bib]
+bibliography: ["../bibliography.bib", "../packages.bib"]
 ---
 
 # Data description
@@ -26,7 +26,7 @@ The license of the file is denoted as "LDC User Agreement for Non-Members". Upon
 
 Below describes my data collection process for the data described above.
 
-Before anything else, I will install the necessary packages. Here I am installing `dplyr`@dplyr for piping more efficiently and `fs`@fs for the file system.
+Before anything else, I will install the necessary packages. Here I am installing `dplyr` @dplyr for piping more efficiently and `fs` @fs for the file system.
 
 ```{r}
 #| label: setup-packages
@@ -40,6 +40,8 @@ library(fs) #file system
 
 The first step in the process is to try out using `download.file()` to acquire the archived file.
 
+After this process, the file will be at `../data/original/swda.tar.gz`. Since it is a gzipped tarball file, I will have to unarchive it using `untar()` from base R.
+
 ```{r}
 #| label: download-archive-test
 
@@ -47,18 +49,20 @@ The first step in the process is to try out using `download.file()` to acquire t
 url <- "https://catalog.ldc.upenn.edu/docs/LDC97S62/swb1_dialogact_annot.tar.gz"
 data_dest <- "../data/original/swda.tar.gz"
 
+#creates temporary filespace for .tar.gz file
+temp_file <- tempfile()
+
 #downloads the file from the url to the data_dest
-download.file(url,data_dest)
+if (!dir.exists(data_dest)){
+  download.file(url,temp_file)
+  
+  #unarchives the file, and copies it into the appropriate file directory
+  untar(temp_file, exdir="../data/original/swda")
+}
 
 ```
 
-Now the file is at `../data/original/swda.tar.gz`. Since it is a gzipped tarball file, I will have to unarchive it using `untar()` from base R.
-
-```{r}
-#| label: unarchive-test
-
-#unarchives the file, and copies it into the appropriate file directory
-untar(data_dest, exdir="../data/original/swda")
-```
 
 Upon completion of this process, the data will be in the appropriate directory: `../data/original/swda`.
+
+

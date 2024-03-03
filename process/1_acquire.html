@@ -153,27 +153,29 @@ div.csl-indent {
 <section id="data-collection" class="level1">
 <h1>Data collection</h1>
 <p>Below describes my data collection process for the data described above.</p>
-<p>Before anything else, I will install the necessary packages. Here I am installing <code>dplyr</code><span class="citation" data-cites="dplyr">Wickham et al. (<a href="#ref-dplyr" role="doc-biblioref">2023</a>)</span> for piping more efficiently and <code>fs</code><span class="citation" data-cites="fs">Hester, Wickham, and Csárdi (<a href="#ref-fs" role="doc-biblioref">2023</a>)</span> for the file system.</p>
+<p>Before anything else, I will install the necessary packages. Here I am installing <code>dplyr</code> <span class="citation" data-cites="dplyr">Wickham et al. (<a href="#ref-dplyr" role="doc-biblioref">2023</a>)</span> for piping more efficiently and <code>fs</code> <span class="citation" data-cites="fs">Hester, Wickham, and Csárdi (<a href="#ref-fs" role="doc-biblioref">2023</a>)</span> for the file system.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load packages</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr) <span class="co">#for piping</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fs) <span class="co">#file system</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The first step in the process is to try out using <code>download.file()</code> to acquire the archived file.</p>
+<p>After this process, the file will be at <code>../data/original/swda.tar.gz</code>. Since it is a gzipped tarball file, I will have to unarchive it using <code>untar()</code> from base R.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set url to file address</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>url <span class="ot">&lt;-</span> <span class="st">"https://catalog.ldc.upenn.edu/docs/LDC97S62/swb1_dialogact_annot.tar.gz"</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>data_dest <span class="ot">&lt;-</span> <span class="st">"../data/original/swda.tar.gz"</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">#downloads the file from the url to the data_dest</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(data_dest)){</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">download.file</span>(url,data_dest)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Now the file is at <code>../data/original/swda.tar.gz</code>. Since it is a gzipped tarball file, I will have to unarchive it using <code>untar()</code> from base R.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#unarchives the file, and copies it into the appropriate file directory</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">untar</span>(data_dest, <span class="at">exdir=</span><span class="st">"../data/original/swda"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">#creates temporary filespace for .tar.gz file</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>temp_file <span class="ot">&lt;-</span> <span class="fu">tempfile</span>()</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">#downloads the file from the url to the data_dest</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">dir.exists</span>(data_dest)){</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">download.file</span>(url,temp_file)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="co">#unarchives the file, and copies it into the appropriate file directory</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">untar</span>(temp_file, <span class="at">exdir=</span><span class="st">"../data/original/swda"</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Upon completion of this process, the data will be in the appropriate directory: <code>../data/original/swda</code>.</p>
 
