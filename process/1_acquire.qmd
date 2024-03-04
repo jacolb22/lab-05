@@ -26,7 +26,7 @@ The license of the file is denoted as "LDC User Agreement for Non-Members". Upon
 
 Below describes my data collection process for the data described above.
 
-Before anything else, I will install the necessary packages. Here I am installing `dplyr` @dplyr for piping more efficiently and `fs` @fs for the file system.
+Before anything else, I will install the necessary packages. Here I am installing `dplyr` @dplyr for piping more efficiently and `fs` @fs for the file system, as well as tools @tools, and tibble, @tibble, which I will need later for file extension viewing and the tibble data structure, respectively.
 
 ```{r}
 #| label: setup-packages
@@ -35,6 +35,8 @@ Before anything else, I will install the necessary packages. Here I am installin
 # Load packages
 library(dplyr) #for piping
 library(fs) #file system
+library(tools) #for file extension viewing
+library(tibble) #for tibble data structure
 
 ```
 
@@ -73,13 +75,55 @@ get lines below header
 add them to a string vector, perhaps add another two vectors for file number and line number
 make that a tibble
 
-when I tried this, it took 5 minutes before it finally went through each file.
+when I tried this, it took 5 minutes before I stopped it.
 
 -->
 
+```{r}
+# Set the path to the main folder containing subfolders with text documents
+main_folder <- "../data/original/swda/"
+
+# Get a list of all files in the main folder and its subfolders
+all_files <- list.files(path = main_folder, recursive = TRUE, full.names = TRUE)
+all_text = character(0) #creates empty chr vector, to be added to, looked up how to do this
+
+# Iterate over each file
+for(file in all_files) {
+  # Check if the file is a utt document using file_ext (looked up function to do this)
+  if(file_ext(file) == "utt") {
+    # Read the content of the text document
+    text <- readLines(file)
+    text <- text[34:length(text)]
+    text <- text[nzchar(text)] #removes empty rows (looked up way to do this)
+    
+    text <- gsub("^\\S*\\s{2,}","",text)
+    text <- trimws(text, whitespace = "[\\s/]*") #didn't work with regular expressions for some reason, works now
+    all_text <- c(all_text,text)
+    
+  }
+}
+
+speaker_vector <- substr(all_text,1,1) #looked up how to do this
+all_text <- substr(all_text,3,nchar(all_text))
+sentence_vector <- as.integer(substr(all_text,1,1))
+all_text <- substr(all_text,6,nchar(all_text))
+utterance_vector <- as.integer(substr(all_text,1,1))
+all_text <- substr(all_text,4,nchar(all_text))
+
+acquired_data_tbl <- tibble(
+  Speaker_id = speaker_vector,
+  Sentence_id = sentence_vector,
+  Utterance_id = utterance_vector,
+  Utterance = all_text 
+)
+
+print(acquired_data_tbl)
+
+#LETS GOOOO IT ACTUALLY WORKS IM THE SMARTEST PERSON ALIVE
 
 
+```
 
 
-
+Now the data is organized in a tibble, with each of the rows containing the data that used to be semi-structured in a structured format.
 

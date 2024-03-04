@@ -133,7 +133,7 @@ div.csl-indent {
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">March 3, 2024</p>
+      <p class="date-modified">March 4, 2024</p>
     </div>
   </div>
     
@@ -153,11 +153,13 @@ div.csl-indent {
 <section id="data-collection" class="level1">
 <h1>Data collection</h1>
 <p>Below describes my data collection process for the data described above.</p>
-<p>Before anything else, I will install the necessary packages. Here I am installing <code>dplyr</code> <span class="citation" data-cites="dplyr">Wickham et al. (<a href="#ref-dplyr" role="doc-biblioref">2023</a>)</span> for piping more efficiently and <code>fs</code> <span class="citation" data-cites="fs">Hester, Wickham, and Csárdi (<a href="#ref-fs" role="doc-biblioref">2023</a>)</span> for the file system.</p>
+<p>Before anything else, I will install the necessary packages. Here I am installing <code>dplyr</code> <span class="citation" data-cites="dplyr">Wickham et al. (<a href="#ref-dplyr" role="doc-biblioref">2023</a>)</span> for piping more efficiently and <code>fs</code> <span class="citation" data-cites="fs">Hester, Wickham, and Csárdi (<a href="#ref-fs" role="doc-biblioref">2023</a>)</span> for the file system, as well as tools <span class="citation" data-cites="tools">R Core Team (<a href="#ref-tools" role="doc-biblioref">2023</a>)</span>, and tibble, <span class="citation" data-cites="tibble">Müller and Wickham (<a href="#ref-tibble" role="doc-biblioref">2023</a>)</span>, which I will need later for file extension viewing and the tibble data structure, respectively.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load packages</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr) <span class="co">#for piping</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fs) <span class="co">#file system</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fs) <span class="co">#file system</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tools) <span class="co">#for file extension viewing</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble) <span class="co">#for tibble data structure</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>The first step in the process is to try out using <code>download.file()</code> to acquire the archived file.</p>
 <p>After this process, the file will be at <code>../data/original/swda.tar.gz</code>. Since it is a gzipped tarball file, I will have to unarchive it using <code>untar()</code> from base R.</p>
@@ -179,12 +181,92 @@ div.csl-indent {
 </div>
 <p>Upon completion of this process, the data will be in the appropriate directory: <code>../data/original/swda</code>.</p>
 <p>To describe this data, it will be useful for it to be in a tibble format. The following code transforms the data into this tibble format.</p>
+<!-- How can I do this?
+
+go through every file
+get lines below header
+add them to a string vector, perhaps add another two vectors for file number and line number
+make that a tibble
+
+when I tried this, it took 5 minutes before I stopped it.
+
+-->
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the path to the main folder containing subfolders with text documents</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>main_folder <span class="ot">&lt;-</span> <span class="st">"../data/original/swda/"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Get a list of all files in the main folder and its subfolders</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>all_files <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">path =</span> main_folder, <span class="at">recursive =</span> <span class="cn">TRUE</span>, <span class="at">full.names =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>all_text <span class="ot">=</span> <span class="fu">character</span>(<span class="dv">0</span>) <span class="co">#creates empty chr vector, to be added to, looked up how to do this</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Iterate over each file</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(file <span class="cf">in</span> all_files) {</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Check if the file is a utt document using file_ext (looked up function to do this)</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">file_ext</span>(file) <span class="sc">==</span> <span class="st">"utt"</span>) {</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Read the content of the text document</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    text <span class="ot">&lt;-</span> <span class="fu">readLines</span>(file)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    text <span class="ot">&lt;-</span> text[<span class="dv">34</span><span class="sc">:</span><span class="fu">length</span>(text)]</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    text <span class="ot">&lt;-</span> text[<span class="fu">nzchar</span>(text)] <span class="co">#removes empty rows (looked up way to do this)</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    text <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">"^</span><span class="sc">\\</span><span class="st">S*</span><span class="sc">\\</span><span class="st">s{2,}"</span>,<span class="st">""</span>,text)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    text <span class="ot">&lt;-</span> <span class="fu">trimws</span>(text, <span class="at">whitespace =</span> <span class="st">"[</span><span class="sc">\\</span><span class="st">s/]*"</span>) <span class="co">#didn't work with regular expressions for some reason, works now</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    all_text <span class="ot">&lt;-</span> <span class="fu">c</span>(all_text,text)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">#LETS GOOOO IT ACTUALLY WORKS IM THE SMARTEST PERSON ALIVE</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>speaker_vector <span class="ot">&lt;-</span> <span class="fu">substr</span>(all_text,<span class="dv">1</span>,<span class="dv">1</span>) <span class="co">#looked up how to do this</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>all_text <span class="ot">&lt;-</span> <span class="fu">substr</span>(all_text,<span class="dv">3</span>,<span class="fu">nchar</span>(all_text))</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>sentence_vector <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(<span class="fu">substr</span>(all_text,<span class="dv">1</span>,<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: NAs introduced by coercion</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>all_text <span class="ot">&lt;-</span> <span class="fu">substr</span>(all_text,<span class="dv">6</span>,<span class="fu">nchar</span>(all_text))</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>utterance_vector <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(<span class="fu">substr</span>(all_text,<span class="dv">1</span>,<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: NAs introduced by coercion</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>all_text <span class="ot">&lt;-</span> <span class="fu">substr</span>(all_text,<span class="dv">4</span>,<span class="fu">nchar</span>(all_text))</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>acquired_data_tbl <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">Speaker_id =</span> speaker_vector,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">Sentence_id =</span> sentence_vector,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">Utterance_id =</span> utterance_vector,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">Utterance =</span> all_text </span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(acquired_data_tbl)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 224,012 × 4
+   Speaker_id Sentence_id Utterance_id Utterance                                
+   &lt;chr&gt;            &lt;int&gt;        &lt;int&gt; &lt;chr&gt;                                    
+ 1 A                    1            1 Okay.                                    
+ 2 A                    1            2 {D So, }                                 
+ 3 B                    2            1 [ [ I guess, +                           
+ 4 A                    3            1 What kind of experience [ do you, + do y…
+ 5 B                    4            1 I think, ] + {F uh, } I wonder ] if that…
+ 6 A                    5            1 Does it say something?                   
+ 7 B                    6            1 I think it usually does.                 
+ 8 B                    6            2 You might try, {F uh, }                  
+ 9 B                    6            3 I don't know,                            
+10 B                    6            4 hold it down a little longer,            
+# ℹ 224,002 more rows</code></pre>
+</div>
+</div>
 
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
 <div id="ref-fs" class="csl-entry" role="listitem">
 Hester, Jim, Hadley Wickham, and Gábor Csárdi. 2023. <em>Fs: Cross-Platform File System Operations Based on ’Libuv’</em>. <a href="https://fs.r-lib.org">https://fs.r-lib.org</a>.
+</div>
+<div id="ref-tibble" class="csl-entry" role="listitem">
+Müller, Kirill, and Hadley Wickham. 2023. <em>Tibble: Simple Data Frames</em>. <a href="https://tibble.tidyverse.org/">https://tibble.tidyverse.org/</a>.
+</div>
+<div id="ref-tools" class="csl-entry" role="listitem">
+R Core Team. 2023. <em>R: A Language and Environment for Statistical Computing</em>. Vienna, Austria: R Foundation for Statistical Computing. <a href="https://www.R-project.org/">https://www.R-project.org/</a>.
 </div>
 <div id="ref-dplyr" class="csl-entry" role="listitem">
 Wickham, Hadley, Romain François, Lionel Henry, Kirill Müller, and Davis Vaughan. 2023. <em>Dplyr: A Grammar of Data Manipulation</em>. <a href="https://dplyr.tidyverse.org">https://dplyr.tidyverse.org</a>.
